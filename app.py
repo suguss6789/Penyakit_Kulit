@@ -12,6 +12,7 @@ from datetime import datetime
 import numpy as np
 import streamlit as st
 import tensorflow as tf
+from huggingface_hub import hf_hub_download
 from PIL import Image
 from tensorflow.keras.models import load_model
 
@@ -36,6 +37,9 @@ APP_TAGLINE = "Skrining awal penyakit kulit berbasis kecerdasan buatan"
 APP_ICON    = "🩺"                                                 # ikon tab browser
 
 # Dua arsitektur yang bisa dipilih pengguna langsung dari halaman utama.
+# File .h5 di-hosting di Hugging Face Hub (terlalu besar untuk GitHub) dan
+# didownload otomatis ke cache lokal saat pertama kali dijalankan.
+HF_REPO_ID = "sugus8907/skin-disease-models"
 MODEL_OPTIONS = {
     "ResNet-50": "resnet50_skin_disease_fixx.h5",
     "EfficientNetB0": "efficientnetb0_skin_disease_fixx.h5",
@@ -371,8 +375,9 @@ st.markdown("<div style='margin-bottom:1rem;'></div>", unsafe_allow_html=True)
 # MODEL & PREPROCESSING
 # =========================================================================
 @st.cache_resource(show_spinner=False)
-def get_model(model_path: str):
-    return load_model(model_path)
+def get_model(model_filename: str):
+    local_path = hf_hub_download(repo_id=HF_REPO_ID, filename=model_filename)
+    return load_model(local_path)
 
 
 def preprocess_image(image: Image.Image) -> np.ndarray:
